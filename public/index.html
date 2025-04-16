@@ -167,14 +167,27 @@
     </script>
     <script>
       // Leaflet Map
-      const map = L.map("leafletMap").setView([-6.955734150558402, 108.19593162716883], 13); // Contoh: Surabaya
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-      }).addTo(map);
-      L.marker([-6.955734150558402, 108.19593162716883])
-        .addTo(map)
-        .bindPopup("Lokasi Masjid")
-        .openPopup();
+      const map = L.map("leafletMap").setView([-6.9557, 108.1959], 17);
+
+      // Tambahkan tile layer
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "© OpenStreetMap",
+        }
+      ).addTo(map);
+
+      // Data marker (latitude, longitude, dan nama popup)
+      const locations = [
+        { lat: -6.955734150558402, lng: 108.19593162716883, name: "Masjid 1" },
+        { lat: -6.9545057618846755, lng: 108.19542334839034, name: "Masjid 2" },
+        { lat: -6.9549011978738875, lng: 108.19604852304519, name: "Masjid 3" },
+      ];
+
+      // Tambahkan semua marker ke peta
+      locations.forEach((lokasi) => {
+        L.marker([lokasi.lat, lokasi.lng]).addTo(map).bindPopup(lokasi.name);
+      });
 
       // Tab Switching
       const tabMap = document.getElementById("tab-map");
