@@ -16,10 +16,10 @@
   </head>
   <body>
     <div class="container mx-auto p-6">
-      <h1 class="text-3xl font-bold mb-6 text-gray-800">Dashboard</h1>
-      <div class="flex flex-col md:flex-row gap-6">
+      <h1 class="text-3xl font-bold mb-6 text-gray-800">Dashboard Desa Kepuh</h1>
+      <div class="flex flex-col lg:flex-row gap-6">
         <!-- Left Side: 3 Cards (1/3) -->
-        <div class="w-full md:w-1/4 space-y-6">
+        <div class="w-full lg:w-1/4 space-y-6">
           <h3 class="font-bold text-xl text-gray-800">Total Pengeluaran Air</h3>
           <div>
             <label for="kategori" class="block text-gray-700 font-medium mb-1"
@@ -40,7 +40,7 @@
           >
             <div class="p-6">
               <h2 class="text-xl font-semibold text-gray-700">Masjid 1</h2>
-              <p id="masjid1-value" class="text-2xl font-bold text-blue-600">1,234 Liter</p>
+              <p id="masjid1-value" class="text-2xl font-bold text-blue-600">1,341 Liter</p>
               <p id="masjid1-growth" class="text-sm text-gray-500">+10% dari minggu lalu</p>
             </div>
             <div class="bg-blue-600 flex justify-center items-center px-10 rounded-l-3xl flex-col">
@@ -54,12 +54,12 @@
           >
             <div class="p-6">
               <h2 class="text-xl font-semibold text-gray-700">Masjid 2</h2>
-              <p id="masjid2-value" class="text-2xl font-bold text-green-600">980 Liter</p>
+              <p id="masjid2-value" class="text-2xl font-bold text-red-500">980 Liter</p>
               <p id="masjid2-growth" class="text-sm text-gray-500">+8% dari minggu lalu</p>
             </div>
-            <div class="bg-green-600 flex justify-center items-center px-10 rounded-l-3xl flex-col">
+            <div class="bg-red-500 flex justify-center items-center px-10 rounded-l-3xl flex-col">
               <img src="./images/mesjid.svg" alt="" />
-              <h1 class="font-semibold text-md mt-2 text-white">Mesjid 1</h1>
+              <h1 class="font-semibold text-md mt-2 text-white">Mesjid 2</h1>
             </div>
           </div>
           <!-- Card 3 -->
@@ -68,19 +68,17 @@
           >
             <div class="p-6">
               <h2 class="text-xl font-semibold text-gray-700">Masjid 3</h2>
-              <p id="masjid3-value" class="text-2xl font-bold text-purple-600">1,100 Liter</p>
+              <p id="masjid3-value" class="text-2xl font-bold text-green-600">1,100 Liter</p>
               <p id="masjid3-growth" class="text-sm text-gray-500">+12% dari minggu lalu</p>
             </div>
-            <div
-              class="bg-purple-600 flex justify-center items-center px-10 rounded-l-3xl flex-col"
-            >
+            <div class="bg-green-600 flex justify-center items-center px-10 rounded-l-3xl flex-col">
               <img src="./images/mesjid.svg" alt="" />
-              <h1 class="font-semibold text-md mt-2 text-white">Mesjid 1</h1>
+              <h1 class="font-semibold text-md mt-2 text-white">Mesjid 2</h1>
             </div>
           </div>
         </div>
         <!-- Right Side: Chart (2/3) -->
-        <div class="w-full md:w-3/4">
+        <div class="w-full lg:w-3/4">
           <div class="bg-white p-6 rounded-lg shadow-md">
             <!-- Tab Navigation -->
             <div class="flex items-center w-full text-gray-600 gap-5 px-10 mb-4">
@@ -95,131 +93,150 @@
               </div>
             </div>
 
-						<!-- Tab Content -->
-						<div id="content-map" class="h-[500px] rounded-xl" style="display: block">
-							<div id="leafletMap" class="w-full h-full rounded-xl"></div>
-						</div>
+            <!-- Tab Content -->
+            <div id="content-map" class="h-[500px] rounded-xl" style="display: block">
+              <div id="leafletMap" class="w-full h-full rounded-xl"></div>
+            </div>
 
-						<div id="content-flow" style="display: none">
-							<canvas id="flowRate" height="140"></canvas>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+            <div id="content-flow" style="display: none" class="h-[500px] max-lg:h-auto">
+              <canvas id="flowRate"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-		<script
-			src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"
-			integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw=="
-			crossorigin="anonymous"
-			referrerpolicy="no-referrer"></script>
-		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-		<script>
-			// Chart.js Configuration
-			const ctx = document.getElementById("flowRate").getContext("2d");
-			new Chart(ctx, {
-				type: "line",
-				data: {
-					labels: ["15.00", "15.03", "15.06", "15.09", "15.12", "15.15"],
-					datasets: [
-						{
-							label: "Masjid 1",
-							data: [12, 19, 3, 5, 2, 3],
-							borderColor: "rgba(54, 162, 235, 1)",
-							backgroundColor: "rgba(54, 162, 235, 0.2)",
-							borderWidth: 2,
-							tension: 0.5,
-						},
-						{
-							label: "Masjid 2",
-							data: [2, 3, 20, 5, 1, 4],
-							borderColor: "rgba(255, 99, 132, 1)",
-							backgroundColor: "rgba(255, 99, 132, 0.2)",
-							borderWidth: 2,
-							tension: 0.5,
-						},
-						{
-							label: "Masjid 3",
-							data: [3, 10, 13, 15, 22, 30],
-							borderColor: "rgba(75, 192, 192, 1)",
-							backgroundColor: "rgba(75, 192, 192, 0.2)",
-							borderWidth: 2,
-							tension: 0.5,
-						},
-					],
-				},
-				options: {
-					responsive: true,
-					scales: {
-						y: {
-							beginAtZero: true,
-						},
-					},
-				},
-			});
-		</script>
-		<script>
-			const data = {
-				perhari: {
-					masjid1: { value: 123, growth: "+2%" },
-					masjid2: { value: 110, growth: "+1%" },
-					masjid3: { value: 95, growth: "+3%" },
-				},
-				perminggu: {
-					masjid1: { value: 1234, growth: "+10%" },
-					masjid2: { value: 980, growth: "+8%" },
-					masjid3: { value: 1100, growth: "+12%" },
-				},
-				perbulan: {
-					masjid1: { value: 5120, growth: "+25%" },
-					masjid2: { value: 4890, growth: "+20%" },
-					masjid3: { value: 4500, growth: "+18%" },
-				},
-			};
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"
+      integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script>
+      // Chart.js Configuration
+      const ctx = document.getElementById("flowRate").getContext("2d");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: ["15.00", "15.03", "15.06", "15.09", "15.12", "15.15"],
+          datasets: [
+            {
+              label: "Masjid 1",
+              data: [12, 19, 3, 5, 2, 3],
+              borderColor: "rgba(54, 162, 235, 1)",
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              borderWidth: 2,
+              tension: 0.5,
+            },
+            {
+              label: "Masjid 2",
+              data: [2, 3, 20, 5, 1, 4],
+              borderColor: "rgba(255, 99, 132, 1)",
+              backgroundColor: "rgba(255, 99, 132, 0.2)",
+              borderWidth: 2,
+              tension: 0.5,
+            },
+            {
+              label: "Masjid 3",
+              data: [3, 10, 13, 15, 22, 30],
+              borderColor: "rgba(75, 192, 192, 1)",
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderWidth: 2,
+              tension: 0.5,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    </script>
+    <script>
+      const data = {
+        perhari: {
+          masjid1: { value: 123, growth: "+2%" },
+          masjid2: { value: 110, growth: "+1%" },
+          masjid3: { value: 95, growth: "+3%" },
+        },
+        perminggu: {
+          masjid1: { value: 1234, growth: "+10%" },
+          masjid2: { value: 980, growth: "+8%" },
+          masjid3: { value: 1100, growth: "+12%" },
+        },
+        perbulan: {
+          masjid1: { value: 5120, growth: "+25%" },
+          masjid2: { value: 4890, growth: "+20%" },
+          masjid3: { value: 4500, growth: "+18%" },
+        },
+      };
 
-			const kategoriSelect = document.getElementById("kategori");
+      const kategoriSelect = document.getElementById("kategori");
 
-			const masjid1Value = document.getElementById("masjid1-value");
-			const masjid1Growth = document.getElementById("masjid1-growth");
+      const masjid1Value = document.getElementById("masjid1-value");
+      const masjid1Growth = document.getElementById("masjid1-growth");
 
-			const masjid2Value = document.getElementById("masjid2-value");
-			const masjid2Growth = document.getElementById("masjid2-growth");
+      const masjid2Value = document.getElementById("masjid2-value");
+      const masjid2Growth = document.getElementById("masjid2-growth");
 
-			const masjid3Value = document.getElementById("masjid3-value");
-			const masjid3Growth = document.getElementById("masjid3-growth");
+      const masjid3Value = document.getElementById("masjid3-value");
+      const masjid3Growth = document.getElementById("masjid3-growth");
 
-			kategoriSelect.addEventListener("change", function () {
-				const selected = kategoriSelect.value;
-				const selectedData = data[selected];
+      kategoriSelect.addEventListener("change", function () {
+        const selected = kategoriSelect.value;
+        const selectedData = data[selected];
 
-				masjid1Value.textContent = `${selectedData.masjid1.value} Liter`;
-				masjid1Growth.textContent = `${selectedData.masjid1.growth} dari ${selected}`;
+        masjid1Value.textContent = `${selectedData.masjid1.value} Liter`;
+        masjid1Growth.textContent = `${selectedData.masjid1.growth} dari ${selected}`;
 
-				masjid2Value.textContent = `${selectedData.masjid2.value} Liter`;
-				masjid2Growth.textContent = `${selectedData.masjid2.growth} dari ${selected}`;
+        masjid2Value.textContent = `${selectedData.masjid2.value} Liter`;
+        masjid2Growth.textContent = `${selectedData.masjid2.growth} dari ${selected}`;
 
-				masjid3Value.textContent = `${selectedData.masjid3.value} Liter`;
-				masjid3Growth.textContent = `${selectedData.masjid3.growth} dari ${selected}`;
-			});
-		</script>
-		<script>
-			// Leaflet Map
-			const map = L.map("leafletMap").setView([-6.9557, 108.1959], 17);
+        masjid3Value.textContent = `${selectedData.masjid3.value} Liter`;
+        masjid3Growth.textContent = `${selectedData.masjid3.growth} dari ${selected}`;
+      });
+    </script>
+    <script>
+      // Leaflet Map
+      const map = L.map("leafletMap").setView([-6.9557, 108.1959], 17);
 
-			// Tambahkan tile layer
-			L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-				attribution: "© OpenStreetMap",
-			}).addTo(map);
+      // Tambahkan tile layer
+      L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+          attribution: "© OpenStreetMap",
+        }
+      ).addTo(map);
 
-			// icons
-			const blueIcon = new L.Icon({
-				iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
-				shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-				iconSize: [25, 41],
-				iconAnchor: [12, 41],
-				popupAnchor: [1, -34],
-				shadowSize: [41, 41],
-			});
+      // icons
+      const blueIcon = new L.Icon({
+        iconUrl:
+          "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
+
+      const redIcon = new L.Icon({
+        iconUrl:
+          "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+      });
 
       const greenIcon = new L.Icon({
         iconUrl:
@@ -231,60 +248,50 @@
         shadowSize: [41, 41],
       });
 
-      const violetIcon = new L.Icon({
-        iconUrl:
-          "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png",
-        shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
+      // Data marker (latitude, longitude, dan nama popup)
+      const locations = [
+        { lat: -6.955734150558402, lng: 108.19593162716883, name: "Masjid 1", icon: blueIcon },
+        { lat: -6.9545057618846755, lng: 108.19542334839034, name: "Masjid 2", icon: redIcon },
+        { lat: -6.9549011978738875, lng: 108.19604852304519, name: "Masjid 3", icon: greenIcon },
+      ];
+
+      // Tambahkan semua marker ke peta
+      locations.forEach((lokasi) => {
+        L.marker([lokasi.lat, lokasi.lng], { icon: lokasi.icon }).addTo(map).bindPopup(lokasi.name);
       });
 
-			// Data marker (latitude, longitude, dan nama popup)
-			const locations = [
-				{ lat: -6.955734150558402, lng: 108.19593162716883, name: "Masjid 1", icon: blueIcon },
-				{ lat: -6.9545057618846755, lng: 108.19542334839034, name: "Masjid 2", icon: greenIcon },
-				{ lat: -6.9549011978738875, lng: 108.19604852304519, name: "Masjid 3", icon: violetIcon },
-			];
+      // Tab Switching
+      const tabMap = document.getElementById("tab-map");
+      const tabFlow = document.getElementById("tab-flow");
+      const contentMap = document.getElementById("content-map");
+      const contentFlow = document.getElementById("content-flow");
 
-			// Tambahkan semua marker ke peta
-			locations.forEach((lokasi) => {
-				L.marker([lokasi.lat, lokasi.lng], { icon: lokasi.icon }).addTo(map).bindPopup(lokasi.name);
-			});
+      tabMap.addEventListener("click", () => {
+        // Show map
+        contentMap.style.display = "block";
+        contentFlow.style.display = "none";
 
-			// Tab Switching
-			const tabMap = document.getElementById("tab-map");
-			const tabFlow = document.getElementById("tab-flow");
-			const contentMap = document.getElementById("content-map");
-			const contentFlow = document.getElementById("content-flow");
+        // Style tab
+        tabMap.classList.add("border-b-4", "border-blue-600", "text-black");
+        tabFlow.classList.remove("border-b-4", "border-blue-600", "text-black");
+        tabFlow.classList.add("text-gray-600");
 
-			tabMap.addEventListener("click", () => {
-				// Show map
-				contentMap.style.display = "block";
-				contentFlow.style.display = "none";
+        // Resize map to fix hidden bug
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 100);
+      });
 
-				// Style tab
-				tabMap.classList.add("border-b-4", "border-blue-600", "text-black");
-				tabFlow.classList.remove("border-b-4", "border-blue-600", "text-black");
-				tabFlow.classList.add("text-gray-600");
+      tabFlow.addEventListener("click", () => {
+        // Show chart
+        contentMap.style.display = "none";
+        contentFlow.style.display = "block";
 
-				// Resize map to fix hidden bug
-				setTimeout(() => {
-					map.invalidateSize();
-				}, 100);
-			});
-
-			tabFlow.addEventListener("click", () => {
-				// Show chart
-				contentMap.style.display = "none";
-				contentFlow.style.display = "block";
-
-				// Style tab
-				tabFlow.classList.add("border-b-4", "border-blue-600", "text-black");
-				tabMap.classList.remove("border-b-4", "border-blue-600", "text-black");
-				tabMap.classList.add("text-gray-600");
-			});
-		</script>
-	</body>
+        // Style tab
+        tabFlow.classList.add("border-b-4", "border-blue-600", "text-black");
+        tabMap.classList.remove("border-b-4", "border-blue-600", "text-black");
+        tabMap.classList.add("text-gray-600");
+      });
+    </script>
+  </body>
 </html>
