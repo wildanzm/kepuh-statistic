@@ -1,293 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Kepuh Statistic</title>
-		<link rel="stylesheet" href="/stylesheets/style.css" />
-		<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	</head>
-	<body>
-		<div class="container mx-auto p-6">
-			<h1 class="text-3xl font-bold mb-6 text-gray-800">Dashboard Desa Kepuh</h1>
-			<div class="flex flex-col lg:flex-row gap-6">
-				<!-- Left Side: 3 Cards (1/3) -->
-				<div class="w-full lg:w-1/4 space-y-6">
-					<h3 class="font-bold text-xl text-gray-800">Total Pengeluaran Air</h3>
-					<div>
-						<label for="kategori" class="block text-gray-700 font-medium mb-1">Pilih Kategori:</label>
-						<select id="kategori" class="w-full border border-gray-300 rounded-lg p-2 text-gray-700">
-							<option value="perhari">Perhari</option>
-							<option value="perminggu" selected>Perminggu</option>
-							<option value="perbulan">Perbulan</option>
-						</select>
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Kepuh Statistic</title>
+	<link rel="stylesheet" href="/stylesheets/style.css" />
+	<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+		integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-50">
+	<div class="container mx-auto p-4 md:p-6">
+		<h1 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">Dashboard Desa Kepuh</h1>
+		<div class="flex flex-col lg:flex-row gap-6">
+			<div class="w-full lg:w-1/4 space-y-6">
+				<h3 class="font-bold text-xl text-gray-800">Total Pengeluaran Air</h3>
+				<div>
+					<label for="kategori" class="block text-gray-700 font-medium mb-1">Pilih Kategori:</label>
+					<select id="kategori" class="w-full border border-gray-300 rounded-lg p-2 text-gray-700">
+						<option value="perhari">Perhari</option>
+						<option value="perminggu" selected>Perminggu</option>
+						<option value="perbulan">Perbulan</option>
+					</select>
+				</div>
+				<div
+					class="bg-white rounded-lg shadow-md border border-slate-200 flex flex-col sm:flex-row justify-between overflow-hidden">
+					<div class="p-6">
+						<h2 class="text-xl font-semibold text-gray-700">Masjid 1</h2>
+						<p id="masjid1-value" class="text-2xl font-bold text-blue-600">1,341 Liter</p>
+						<p id="masjid1-growth" class="text-sm text-gray-500">+10% dari minggu lalu</p>
 					</div>
-					<!-- Card 1 -->
-					<div class="bg-white rounded-lg shadow-md border border-slate-200 flex justify-between overflow-hidden">
-						<div class="p-6">
-							<h2 class="text-xl font-semibold text-gray-700">Masjid 1</h2>
-							<p id="masjid1-value" class="text-2xl font-bold text-blue-600">1,341 Liter</p>
-							<p id="masjid1-growth" class="text-sm text-gray-500">+10% dari minggu lalu</p>
-						</div>
-						<div class="bg-blue-600 flex justify-center items-center px-10 rounded-l-3xl flex-col">
-							<img src="./images/mesjid.svg" alt="" />
-							<h1 class="font-semibold text-md mt-2 text-white">Mesjid 1</h1>
-						</div>
-					</div>
-					<!-- Card 2 -->
-					<div class="bg-white rounded-lg shadow-md border border-slate-200 flex justify-between overflow-hidden">
-						<div class="p-6">
-							<h2 class="text-xl font-semibold text-gray-700">Masjid 2</h2>
-							<p id="masjid2-value" class="text-2xl font-bold text-red-500">980 Liter</p>
-							<p id="masjid2-growth" class="text-sm text-gray-500">+8% dari minggu lalu</p>
-						</div>
-						<div class="bg-red-500 flex justify-center items-center px-10 rounded-l-3xl flex-col">
-							<img src="./images/mesjid.svg" alt="" />
-							<h1 class="font-semibold text-md mt-2 text-white">Mesjid 2</h1>
-						</div>
-					</div>
-					<!-- Card 3 -->
-					<div class="bg-white rounded-lg shadow-md border border-slate-200 flex justify-between overflow-hidden">
-						<div class="p-6">
-							<h2 class="text-xl font-semibold text-gray-700">Masjid 3</h2>
-							<p id="masjid3-value" class="text-2xl font-bold text-green-600">1,100 Liter</p>
-							<p id="masjid3-growth" class="text-sm text-gray-500">+12% dari minggu lalu</p>
-						</div>
-						<div class="bg-green-600 flex justify-center items-center px-10 rounded-l-3xl flex-col">
-							<img src="./images/mesjid.svg" alt="" />
-							<h1 class="font-semibold text-md mt-2 text-white">Mesjid 2</h1>
-						</div>
+					<div
+						class="bg-blue-600 flex justify-center items-center p-4 sm:px-8 rounded-l-none sm:rounded-l-3xl flex-col">
+						<img src="./images/mesjid.svg" alt="Ikon Masjid" />
+						<h1 class="font-semibold text-md mt-2 text-white">Masjid 1</h1>
 					</div>
 				</div>
-				<!-- Right Side: Chart (2/3) -->
-				<div class="w-full lg:w-3/4">
-					<div class="bg-white p-6 rounded-lg shadow-md">
-						<!-- Tab Navigation -->
-						<div class="flex items-center w-full text-gray-600 gap-5 px-10 mb-4">
-							<div id="tab-map" class="w-1/2 text-center text-black cursor-pointer border-b-4 border-blue-600 pb-2">
-								<p>Map</p>
-							</div>
-							<div id="tab-flow" class="w-1/2 text-center text-gray-600 cursor-pointer pb-2">
-								<p>Flow Rate</p>
-							</div>
+				<div
+					class="bg-white rounded-lg shadow-md border border-slate-200 flex flex-col sm:flex-row justify-between overflow-hidden">
+					<div class="p-6">
+						<h2 class="text-xl font-semibold text-gray-700">Masjid 2</h2>
+						<p id="masjid2-value" class="text-2xl font-bold text-red-500">980 Liter</p>
+						<p id="masjid2-growth" class="text-sm text-gray-500">+8% dari minggu lalu</p>
+					</div>
+					<div
+						class="bg-red-500 flex justify-center items-center p-4 sm:px-8 rounded-l-none sm:rounded-l-3xl flex-col">
+						<img src="./images/mesjid.svg" alt="Ikon Masjid" />
+						<h1 class="font-semibold text-md mt-2 text-white">Masjid 2</h1>
+					</div>
+				</div>
+				<div
+					class="bg-white rounded-lg shadow-md border border-slate-200 flex flex-col sm:flex-row justify-between overflow-hidden">
+					<div class="p-6">
+						<h2 class="text-xl font-semibold text-gray-700">Masjid 3</h2>
+						<p id="masjid3-value" class="text-2xl font-bold text-green-600">1,100 Liter</p>
+						<p id="masjid3-growth" class="text-sm text-gray-500">+12% dari minggu lalu</p>
+					</div>
+					<div
+						class="bg-green-600 flex justify-center items-center p-4 sm:px-8 rounded-l-none sm:rounded-l-3xl flex-col">
+						<img src="./images/mesjid.svg" alt="Ikon Masjid" />
+						<h1 class="font-semibold text-md mt-2 text-white">Masjid 3</h1>
+					</div>
+				</div>
+			</div>
+			<div class="w-full lg:w-3/4">
+				<div class="bg-white p-4 md:p-6 rounded-lg shadow-md">
+					<div class="flex items-center w-full gap-4 text-sm sm:text-base px-2 sm:px-10 mb-4">
+						<div id="tab-map"
+							class="w-1/4 text-center text-black cursor-pointer border-b-4 border-blue-600 pb-2">
+							<p>Map</p>
 						</div>
-
-						<!-- Tab Content -->
-						<div id="content-map" class="h-[500px] rounded-xl" style="display: block">
-							<div id="leafletMap" class="w-full h-full rounded-xl"></div>
+						<div id="tab-flow"
+							class="w-1/4 text-center text-gray-600 cursor-pointer border-b-4 border-transparent pb-2">
+							<p>Flow Rate</p>
 						</div>
+						<div id="tab-rssi"
+							class="w-1/4 text-center text-gray-600 cursor-pointer border-b-4 border-transparent pb-2">
+							<p>RSSI</p>
+						</div>
+						<div id="tab-kontrol"
+							class="w-1/4 text-center text-gray-600 cursor-pointer border-b-4 border-transparent pb-2">
+							<p>Kontrol Pompa</p>
+						</div>
+					</div>
 
-						<div id="content-flow" style="display: none" class="h-[500px] max-lg:h-auto">
-							<canvas id="flowrate"></canvas>
+					<div id="content-map" class="h-[400px] md:h-[500px] rounded-xl" style="display: block;">
+						<div id="leafletMap" class="w-full h-full rounded-xl"></div>
+					</div>
+					<div id="content-flow" style="display: none;" class="h-[400px] md:h-auto md:aspect-video">
+						<canvas id="flowrate"></canvas>
+					</div>
+					<div id="content-rssi" style="display: none;" class="h-[400px] md:h-auto md:aspect-video">
+						<canvas id="rssiChart"></canvas>
+					</div>
+					<div id="content-kontrol" style="display: none;" class="p-4">
+						<h3 class="text-xl font-semibold mb-4 text-gray-800">Kontrol Pompa Air</h3>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<div class="bg-gray-100 p-4 rounded-lg shadow-sm">
+								<h4 class="font-bold text-lg text-blue-600">Masjid 1</h4>
+								<p class="text-gray-600 mb-2">Status: <span id="kontrol-status-1"
+										class="font-bold text-gray-800">Tidak Diketahui</span></p>
+								<div class="flex gap-2">
+									<button onclick="controlPipe('node1', 'OPEN')"
+										class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Buka</button>
+									<button onclick="controlPipe('node1', 'CLOSE')"
+										class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Tutup</button>
+								</div>
+							</div>
+							<div class="bg-gray-100 p-4 rounded-lg shadow-sm">
+								<h4 class="font-bold text-lg text-red-500">Masjid 2</h4>
+								<p class="text-gray-600 mb-2">Status: <span id="kontrol-status-2"
+										class="font-bold text-gray-800">Tidak Diketahui</span></p>
+								<div class="flex gap-2">
+									<button onclick="controlPipe('node2', 'OPEN')"
+										class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Buka</button>
+									<button onclick="controlPipe('node2', 'CLOSE')"
+										class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Tutup</button>
+								</div>
+							</div>
+							<div class="bg-gray-100 p-4 rounded-lg shadow-sm">
+								<h4 class="font-bold text-lg text-green-600">Masjid 3</h4>
+								<p class="text-gray-600 mb-2">Status: <span id="kontrol-status-3"
+										class="font-bold text-gray-800">Tidak Diketahui</span></p>
+								<div class="flex gap-2">
+									<button onclick="controlPipe('node3', 'OPEN')"
+										class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Buka</button>
+									<button onclick="controlPipe('node3', 'CLOSE')"
+										class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Tutup</button>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<script
-			src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"
-			integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw=="
-			crossorigin="anonymous"
-			referrerpolicy="no-referrer"></script>
-		<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-		<script>
-			// Chart.js Configuration
-			async function renderChart() {
-				try {
-					// Ambil data dari endpoint /flowrate
-					const response = await fetch("/flowrate");
-					if (!response.ok) {
-						throw new Error(`HTTP error! Status: ${response.status}`);
-					}
-					const data = await response.json();
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"></script>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
 
+	<script>
+		// --- Chart Rendering ---
+		let flowrateChart, rssiChart;
 
-					// Validasi data
-					if (!data.labels || !data.datasets) {
-						console.error("Invalid data format:", data);
-						return;
-					}
-
-					// Konfigurasi Chart.js
-					const ctx = document.getElementById("flowrate").getContext("2d");
-					new Chart(ctx, {
-						type: "line",
-						data: {
-							labels: data.labels, // Label waktu (misalnya, ["15:30", "15:33", ...])
-							datasets: data.datasets.map((ds) => ({
-								label: ds.label, // Nama masjid
-								data: ds.data, // Data flow rate langsung (array numerik)
-								borderColor: ds.borderColor,
-								backgroundColor: ds.backgroundColor,
-								borderWidth: ds.borderWidth,
-								tension: ds.tension,
-								fill: false, // Tidak mengisi area di bawah garis
-							})),
-						},
-						options: {
-							responsive: true,
-							interaction: {
-								mode: "index",
-								intersect: false,
-							},
-							scales: {
-								x: {
-									title: { display: true, text: "Waktu" },
-								},
-								y: {
-									title: { display: true, text: "Flow Rate (L/min)" },
-									beginAtZero: true,
-								},
-							},
-							plugins: {
-								legend: {
-									display: true,
-									position: "top",
-								},
-								tooltip: {
-									enabled: true,
-									mode: "index",
-									intersect: false,
-								},
-							},
-						},
-					});
-				} catch (error) {
-					console.error("Error rendering chart:", error);
-				}
+		// Function to create flowrate chart
+		function createFlowrateChart(data) {
+			console.log('🏗️  Creating flowrate chart with data:', data);
+			const canvas = document.getElementById('flowrate');
+			if (!canvas) {
+				console.error('❌ Flowrate canvas element not found!');
+				return;
 			}
 
-			// Panggil fungsi untuk merender chart
-			renderChart();
-		</script>
-		<script>
-			const data = {
-				perhari: {
-					masjid1: { value: 123, growth: "+2%" },
-					masjid2: { value: 110, growth: "+1%" },
-					masjid3: { value: 95, growth: "+3%" },
-				},
-				perminggu: {
-					masjid1: { value: 1234, growth: "+10%" },
-					masjid2: { value: 980, growth: "+8%" },
-					masjid3: { value: 1100, growth: "+12%" },
-				},
-				perbulan: {
-					masjid1: { value: 5120, growth: "+25%" },
-					masjid2: { value: 4890, growth: "+20%" },
-					masjid3: { value: 4500, growth: "+18%" },
-				},
-			};
+			const ctx = canvas.getContext('2d');
+			if (flowrateChart) flowrateChart.destroy();
 
-			const kategoriSelect = document.getElementById("kategori");
-
-			const masjid1Value = document.getElementById("masjid1-value");
-			const masjid1Growth = document.getElementById("masjid1-growth");
-
-			const masjid2Value = document.getElementById("masjid2-value");
-			const masjid2Growth = document.getElementById("masjid2-growth");
-
-			const masjid3Value = document.getElementById("masjid3-value");
-			const masjid3Growth = document.getElementById("masjid3-growth");
-
-			kategoriSelect.addEventListener("change", function () {
-				const selected = kategoriSelect.value;
-				const selectedData = data[selected];
-
-				masjid1Value.textContent = `${selectedData.masjid1.value} Liter`;
-				masjid1Growth.textContent = `${selectedData.masjid1.growth} dari ${selected}`;
-
-				masjid2Value.textContent = `${selectedData.masjid2.value} Liter`;
-				masjid2Growth.textContent = `${selectedData.masjid2.growth} dari ${selected}`;
-
-				masjid3Value.textContent = `${selectedData.masjid3.value} Liter`;
-				masjid3Growth.textContent = `${selectedData.masjid3.growth} dari ${selected}`;
+			flowrateChart = new Chart(ctx, {
+				type: "line",
+				data: data,
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					animation: {
+						duration: 500, // Fast like flowing water
+						easing: 'linear', // Constant flow motion
+						animateRotate: false,
+						animateScale: false,
+						// Smooth continuous flow animation
+						onProgress: function (animation) {
+							// Create flowing water effect with subtle glow
+							const ctx = animation.chart.ctx;
+							ctx.shadowColor = 'rgba(54, 162, 235, 0.2)';
+							ctx.shadowBlur = 2;
+						},
+						onComplete: function (animation) {
+							console.log('Flowrate chart flow animation completed');
+						}
+					},
+					transitions: {
+						active: {
+							animation: {
+								duration: 500,
+								easing: 'linear' // Linear for consistent water flow
+							}
+						}
+					},
+					elements: {
+						line: {
+							tension: 0.4, // More fluid curves like flowing water
+							borderWidth: 3, // Thicker line for better flow visibility
+							fill: false,
+							borderCapStyle: 'round', // Smooth line endings
+							borderJoinStyle: 'round', // Smooth connections
+							stepped: false // Smooth continuous line
+						},
+						point: {
+							radius: 1, // Smaller points for cleaner water flow
+							hoverRadius: 4,
+							borderWidth: 0, // No border for smoother look
+							pointBackgroundColor: function(context) {
+								return context.dataset.borderColor;
+							},
+							pointHoverBackgroundColor: function(context) {
+								return context.dataset.borderColor;
+							}
+						}
+					},
+					scales: {
+						x: {
+							title: { display: true, text: "Waktu (HH:MM:SS)" },
+							ticks: {
+								maxTicksLimit: 10 // Limit number of labels shown
+							}
+						},
+						y: { title: { display: true, text: "Flow Rate (L/min)" } }
+					}
+				}
 			});
-		</script>
-		<script>
-			// Leaflet Map
-			const map = L.map("leafletMap").setView([-6.9557, 108.1959], 17);
+			console.log('✅ Flowrate chart created successfully with flowing water animations');
+		}
 
-			// Tambahkan tile layer
-			L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-				attribution: "© OpenStreetMap",
-			}).addTo(map);
+		// Function to create RSSI chart
+		function createRssiChart(data) {
+			console.log('🏗️  Creating RSSI chart with data:', data);
+			const canvas = document.getElementById('rssiChart');
+			if (!canvas) {
+				console.error('❌ RSSI canvas element not found!');
+				return;
+			}
 
-			// icons
-			const blueIcon = new L.Icon({
-				iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
-				shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-				iconSize: [25, 41],
-				iconAnchor: [12, 41],
-				popupAnchor: [1, -34],
-				shadowSize: [41, 41],
+			const ctx = canvas.getContext('2d');
+			if (rssiChart) rssiChart.destroy();
+
+			rssiChart = new Chart(ctx, {
+				type: "line",
+				data: data,
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					animation: {
+						duration: 500, // Fast like flowing water
+						easing: 'linear', // Constant flow motion
+						animateRotate: false,
+						animateScale: false,
+						// Smooth continuous flow animation
+						onProgress: function (animation) {
+							// Create flowing water effect with subtle glow
+							const ctx = animation.chart.ctx;
+							ctx.shadowColor = 'rgba(255, 99, 132, 0.2)';
+							ctx.shadowBlur = 2;
+						},
+						onComplete: function (animation) {
+							console.log('RSSI chart flow animation completed');
+						}
+					},
+					transitions: {
+						active: {
+							animation: {
+								duration: 500,
+								easing: 'linear' // Linear for consistent water flow
+							}
+						}
+					},
+					elements: {
+						line: {
+							tension: 0.4, // More fluid curves like flowing water
+							borderWidth: 3, // Thicker line for better flow visibility
+							fill: false,
+							borderCapStyle: 'round', // Smooth line endings
+							borderJoinStyle: 'round', // Smooth connections
+							stepped: false // Smooth continuous line
+						},
+						point: {
+							radius: 1, // Smaller points for cleaner water flow
+							hoverRadius: 4,
+							borderWidth: 0, // No border for smoother look
+							pointBackgroundColor: function(context) {
+								return context.dataset.borderColor;
+							},
+							pointHoverBackgroundColor: function(context) {
+								return context.dataset.borderColor;
+							}
+						}
+					},
+					scales: {
+						x: {
+							title: { display: true, text: "Waktu (HH:MM:SS)" },
+							ticks: {
+								maxTicksLimit: 10 // Limit number of labels shown
+							}
+						},
+						y: { title: { display: true, text: "RSSI (dBm)" } }
+					}
+				}
+			});
+			console.log('✅ RSSI chart created successfully with flowing water animations');
+		}
+
+		// --- Static Data and UI Elements ---
+		const data = {
+			perhari: { masjid1: { value: 123, growth: "+2%" }, masjid2: { value: 110, growth: "+1%" }, masjid3: { value: 95, growth: "+3%" } },
+			perminggu: { masjid1: { value: 1234, growth: "+10%" }, masjid2: { value: 980, growth: "+8%" }, masjid3: { value: 1100, growth: "+12%" } },
+			perbulan: { masjid1: { value: 5120, growth: "+25%" }, masjid2: { value: 4890, growth: "+20%" }, masjid3: { value: 4500, growth: "+18%" } }
+		};
+		const kategoriSelect = document.getElementById("kategori");
+		kategoriSelect.addEventListener("change", function () { /* ... logic ... */ });
+
+		// --- Leaflet Map ---
+		const map = L.map("leafletMap").setView([-6.9557, 108.1959], 17);
+		L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { attribution: "© OpenStreetMap" }).addTo(map);
+		const blueIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+		const redIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+		const greenIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+		const locations = [{ lat: -6.955734150558402, lng: 108.19593162716883, name: "Masjid 1", icon: blueIcon }, { lat: -6.9545057618846755, lng: 108.19542334839034, name: "Masjid 2", icon: redIcon }, { lat: -6.9549011978738875, lng: 108.19604852304519, name: "Masjid 3", icon: greenIcon }];
+		locations.forEach((lokasi) => L.marker([lokasi.lat, lokasi.lng], { icon: lokasi.icon }).addTo(map).bindPopup(lokasi.name));
+
+		// --- Tab Switching Logic ---
+		const tabs = {
+			map: { btn: document.getElementById("tab-map"), content: document.getElementById("content-map") },
+			flow: { btn: document.getElementById("tab-flow"), content: document.getElementById("content-flow") },
+			rssi: { btn: document.getElementById("tab-rssi"), content: document.getElementById("content-rssi") },
+			kontrol: { btn: document.getElementById("tab-kontrol"), content: document.getElementById("content-kontrol") },
+		};
+
+		function switchTab(activeTabKey) {
+			Object.keys(tabs).forEach(key => {
+				const isActive = key === activeTabKey;
+				tabs[key].content.style.display = isActive ? "block" : "none";
+				tabs[key].btn.classList.toggle("text-black", isActive);
+				tabs[key].btn.classList.toggle("border-blue-600", isActive);
+				tabs[key].btn.classList.toggle("text-gray-600", !isActive);
+				tabs[key].btn.classList.toggle("border-transparent", !isActive);
 			});
 
-			const redIcon = new L.Icon({
-				iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-				shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-				iconSize: [25, 41],
-				iconAnchor: [12, 41],
-				popupAnchor: [1, -34],
-				shadowSize: [41, 41],
-			});
+			if (activeTabKey === 'map') {
+				setTimeout(() => map.invalidateSize(), 100);
+			} else if (activeTabKey === 'flow') {
+				// Always destroy existing chart and create a new one for reliable updates
+				if (flowrateChart) {
+					flowrateChart.destroy();
+					flowrateChart = null;
+				}
+				
+				// Use latest data if available, otherwise fetch from server
+				if (window.latestFlowrateData) {
+					createFlowrateChart(window.latestFlowrateData);
+				} else {
+					// Fetch fresh data for flowrate chart
+					fetch("/flowrate")
+						.then(response => response.json())
+						.then(data => {
+							createFlowrateChart(data);
+						})
+						.catch(error => {
+							console.error("Error fetching flowrate data:", error);
+						});
+				}
+			} else if (activeTabKey === 'rssi') {
+				// Always destroy existing chart and create a new one for reliable updates
+				if (rssiChart) {
+					rssiChart.destroy();
+					rssiChart = null;
+				}
+				
+				// Use latest data if available, otherwise fetch from server
+				if (window.latestRssiData) {
+					createRssiChart(window.latestRssiData);
+				} else {
+					// Fetch fresh data for RSSI chart
+					fetch("/rssi")
+						.then(response => response.json())
+						.then(data => {
+							createRssiChart(data);
+						})
+						.catch(error => {
+							console.error("Error fetching RSSI data:", error);
+						});
+				}
+			}
+		}
 
-			const greenIcon = new L.Icon({
-				iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-				shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-				iconSize: [25, 41],
-				iconAnchor: [12, 41],
-				popupAnchor: [1, -34],
-				shadowSize: [41, 41],
-			});
+		Object.keys(tabs).forEach(key => tabs[key].btn.addEventListener("click", () => switchTab(key)));
 
-			// Data marker (latitude, longitude, dan nama popup)
-			const locations = [
-				{ lat: -6.955734150558402, lng: 108.19593162716883, name: "Masjid 1", icon: blueIcon },
-				{ lat: -6.9545057618846755, lng: 108.19542334839034, name: "Masjid 2", icon: redIcon },
-				{ lat: -6.9549011978738875, lng: 108.19604852304519, name: "Masjid 3", icon: greenIcon },
-			];
+		// --- Socket.io and Pump Control ---
+		const socket = io();
 
-			// Tambahkan semua marker ke peta
-			locations.forEach((lokasi) => {
-				L.marker([lokasi.lat, lokasi.lng], { icon: lokasi.icon }).addTo(map).bindPopup(lokasi.name);
-			});
+		// Function to show console updates (since visual indicator was removed)
+		function logUpdateStatus(message) {
+			console.log(`[Real-time Update] ${message}`);
+		}
 
-			// Tab Switching
-			const tabMap = document.getElementById("tab-map");
-			const tabFlow = document.getElementById("tab-flow");
-			const contentMap = document.getElementById("content-map");
-			const contentFlow = document.getElementById("content-flow");
+		socket.on('connect', () => {
+			console.log('✅ Terhubung ke server via Socket.io');
+			console.log('✅ Real-time updates enabled');
+			logUpdateStatus('Connected - Real-time Active');
+		});
 
-			tabMap.addEventListener("click", () => {
-				// Show map
-				contentMap.style.display = "block";
-				contentFlow.style.display = "none";
+		socket.on('disconnect', () => {
+			console.log('❌ Disconnected from server');
+			logUpdateStatus('Disconnected');
+		});
 
-				// Style tab
-				tabMap.classList.add("border-b-4", "border-blue-600", "text-black");
-				tabFlow.classList.remove("border-b-4", "border-blue-600", "text-black");
-				tabFlow.classList.add("text-gray-600");
+		// --- Real-time Chart Updates via Socket.io ---
+		socket.on('data:update', (data) => {
+			console.log('🌊 Received unified data update:', data);
+			logUpdateStatus('Unified Chart Data Received');
 
-				// Resize map to fix hidden bug
-				setTimeout(() => {
-					map.invalidateSize();
-				}, 100);
-			});
+			// Update Flowrate Chart
+			if (data.flowrate && data.flowrate.labels && data.flowrate.datasets) {
+				updateChart('flowrate', data.flowrate);
+			} else {
+				console.error('❌ Invalid flowrate data in unified update:', data.flowrate);
+			}
 
-			tabFlow.addEventListener("click", () => {
-				// Show chart
-				contentMap.style.display = "none";
-				contentFlow.style.display = "block";
+			// Update RSSI Chart
+			if (data.rssi && data.rssi.labels && data.rssi.datasets) {
+				console.log('📡 Updating RSSI chart with data:', data.rssi);
+				updateChart('rssi', data.rssi);
+			} else {
+				console.error('❌ Invalid RSSI data in unified update:', data.rssi);
+			}
 
-				// Style tab
-				tabFlow.classList.add("border-b-4", "border-blue-600", "text-black");
-				tabMap.classList.remove("border-b-4", "border-blue-600", "text-black");
-				tabMap.classList.add("text-gray-600");
-			});
-		</script>
-	</body>
+			// Update Statistics Cards
+			if (data.statistics) {
+				updateStatisticsCards(data.statistics);
+			}
+		});
+
+		// Function to update charts with new data
+		function updateChart(canvasId, data) {
+			console.log(`🔄 Updating chart ${canvasId} with data:`, data);
+			console.log(`🔄 Data structure: labels=${data.labels?.length || 0}, datasets=${data.datasets?.length || 0}`);
+
+			// Always destroy existing chart and create a new one for reliable updates
+			if (canvasId === 'flowrate') {
+				if (flowrateChart) {
+					flowrateChart.destroy();
+					flowrateChart = null;
+				}
+				createFlowrateChart(data);
+			} else if (canvasId === 'rssi') {
+				if (rssiChart) {
+					rssiChart.destroy();
+					rssiChart = null;
+				}
+				createRssiChart(data);
+			}
+			
+			// Cache the latest data
+			if (canvasId === 'flowrate') {
+				window.latestFlowrateData = data;
+			} else {
+				window.latestRssiData = data;
+			}
+			console.log(`💾 ${canvasId} data cached.`);
+		}
+
+		socket.on('data:statistics:update', (data) => {
+			console.log('📈 Received statistics update:', data);
+			logUpdateStatus('Statistics Updated');
+			updateStatisticsCards(data);
+		});
+
+		// Function to update statistics cards
+		function updateStatisticsCards(data) {
+			// Update Masjid 1
+			if (data.node1) {
+				const masjid1Value = document.getElementById('masjid1-value');
+				const masjid1Growth = document.getElementById('masjid1-growth');
+				if (masjid1Value) masjid1Value.textContent = `${data.node1.value.toLocaleString()} Liter`;
+				if (masjid1Growth) masjid1Growth.textContent = `${data.node1.growth} dari periode sebelumnya`;
+			}
+
+			// Update Masjid 2
+			if (data.node2) {
+				const masjid2Value = document.getElementById('masjid2-value');
+				const masjid2Growth = document.getElementById('masjid2-growth');
+				if (masjid2Value) masjid2Value.textContent = `${data.node2.value.toLocaleString()} Liter`;
+				if (masjid2Growth) masjid2Growth.textContent = `${data.node2.growth} dari periode sebelumnya`;
+			}
+
+			// Update Masjid 3
+			if (data.node3) {
+				const masjid3Value = document.getElementById('masjid3-value');
+				const masjid3Growth = document.getElementById('masjid3-growth');
+				if (masjid3Value) masjid3Value.textContent = `${data.node3.value.toLocaleString()} Liter`;
+				if (masjid3Growth) masjid3Growth.textContent = `${data.node3.growth} dari periode sebelumnya`;
+			}
+		}
+
+		function controlPipe(nodeId, action) {
+			console.log(`Mengirim perintah: ${action} ke ${nodeId}`);
+			socket.emit('pipe:control', { nodeId, action });
+		}
+
+		socket.on('pipe:control:feedback', (data) => {
+			alert(data.message); // Simple feedback
+		});
+
+		// Initialize first tab content
+		switchTab('map');
+	</script>
+</body>
+
 </html>

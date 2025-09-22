@@ -1,66 +1,122 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
-
 const app = require("../app");
 const debug = require("debug")("kepuch:server");
 const http = require("http");
 const { Server } = require("socket.io");
-
-/**
- * Get port from environment and store in Express.
- */
+const axios = require("axios"); // Import axios
+const { getFlowrateData, getRssiData, getStatisticsData } = require("../routes/index");
+require("dotenv").config(); // Pastikan dotenv di-load
 
 const port = normalizePort(process.env.PORT || "3000");
 app.set("port", port);
 
-/**
- * Create HTTP server.
- */
-
 const server = http.createServer(app);
 
-/**
- * Setup WebSocket using socket.io
- */
+// --- Konfigurasi Blynk ---
+// Simpan Auth Token di file .env Anda
+const BLYNK_AUTH_TOKENS = {
+	node1: process.env.BLYNK_AUTH_TOKEN_NODE1,
+	node2: process.env.BLYNK_AUTH_TOKEN_NODE2,
+	node3: process.env.BLYNK_AUTH_TOKEN_NODE3,
+};
+const BLYNK_API_URL = "https://blynk.cloud/external/api";
 
+// --- Setup WebSocket (Socket.io) ---
 const io = new Server(server, {
 	cors: {
-		origin: "*", // ubah sesuai kebutuhan
+		origin: "*", // Sesuaikan untuk produksi
 		methods: ["GET", "POST"],
 	},
 });
 
-// WebSocket event handler
 io.on("connection", (socket) => {
-	console.log("Client connected:", socket.id);
+	console.log("Client terhubung:", socket.id);
 
-	// Contoh: kirim pesan dari server ke client
-	socket.emit("welcome", "Hello from server!");
+	// Event handler untuk kontrol pompa
+	socket.on("pipe:control", async (data) => {
+		const { nodeId, action } = data;
+		console.log(`Perintah Blynk diterima untuk ${nodeId}: ${action}`);
 
-	// Terima pesan dari client
-	socket.on("message", (msg) => {
-		console.log("Received message:", msg);
+		const authToken = BLYNK_AUTH_TOKENS[nodeId];
+		if (!authToken) {
+			console.error(`Auth Token tidak ditemukan untuk ${nodeId}`);
+			socket.emit("pipe:control:feedback", { status: "error", message: `Node ${nodeId} tidak terdaftar.` });
+			return;
+		}
+
+		// Tentukan nilai (1 untuk OPEN, 0 untuk CLOSE) dan Virtual Pin
+		const value = action.toUpperCase() === "OPEN" ? 1 : 0;
+		const virtualPin = "v1"; // Asumsi V1 digunakan untuk kontrol relay
+
+		try {
+			// Panggil Blynk HTTP API
+			await axios.get(`${BLYNK_API_URL}/update?token=${authToken}&${virtualPin}=${value}`);
+			console.log(`Perintah ke Blynk untuk ${nodeId} berhasil dikirim.`);
+			socket.emit("pipe:control:feedback", { status: "success", message: `Perintah ${action} untuk ${nodeId} berhasil dikirim.` });
+		} catch (error) {
+			console.error(`Gagal mengirim perintah ke Blynk untuk ${nodeId}:`, error.response ? error.response.data : error.message);
+			socket.emit("pipe:control:feedback", { status: "error", message: `Gagal mengirim perintah. Cek konsol server.` });
+		}
 	});
 
 	socket.on("disconnect", () => {
-		console.log("Client disconnected:", socket.id);
+		console.log("Client terputus:", socket.id);
 	});
 });
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+// --- Real-time Data Broadcasting ---
+let dataUpdateInterval;
+
+// Function to broadcast fresh data to all connected clients
+async function broadcastDataUpdates() {
+	try {
+		const clientCount = io.sockets.sockets.size;
+		if (clientCount === 0) {
+			console.log("No clients connected, skipping broadcast.");
+			return;
+		}
+
+		console.log(`Broadcasting data updates to ${clientCount} connected clients`);
+
+		// Get fresh data from database
+		const [flowrateData, rssiData, statisticsData] = await Promise.all([getFlowrateData(), getRssiData(), getStatisticsData()]);
+
+		// Broadcast a single unified event
+		io.emit("data:update", {
+			flowrate: flowrateData,
+			rssi: rssiData,
+			statistics: statisticsData,
+		});
+
+		console.log("Data update broadcast completed successfully.");
+	} catch (err) {
+		console.error("Error broadcasting data updates:", err);
+	}
+}
+
+// Start periodic data broadcasting every 30 seconds
+function startDataBroadcasting() {
+	console.log("Starting real-time data broadcasting...");
+	// Initial broadcast
+	setTimeout(broadcastDataUpdates, 2000); // Wait 2 seconds after server start
+
+	// Set up periodic broadcasting every 10 seconds (more frequent for better real-time experience)
+	dataUpdateInterval = setInterval(broadcastDataUpdates, 10000);
+}
+
+// Stop data broadcasting (useful for cleanup)
+function stopDataBroadcasting() {
+	if (dataUpdateInterval) {
+		clearInterval(dataUpdateInterval);
+		dataUpdateInterval = null;
+		console.log("Data broadcasting stopped");
+	}
+}
 
 server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
-
-/**
- * Normalize a port into a number, string, or false.
- */
 
 function normalizePort(val) {
 	const port = parseInt(val, 10);
@@ -68,10 +124,6 @@ function normalizePort(val) {
 	if (port >= 0) return port;
 	return false;
 }
-
-/**
- * Event listener for HTTP server "error" event.
- */
 
 function onError(error) {
 	if (error.syscall !== "listen") throw error;
@@ -90,12 +142,31 @@ function onError(error) {
 	}
 }
 
-/**
- * Event listener for HTTP server "listening" event.
- */
-
 function onListening() {
 	const addr = server.address();
 	const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
 	debug("Listening on " + bind);
+	console.log("Server is listening on " + bind);
+
+	// Start real-time data broadcasting
+	startDataBroadcasting();
 }
+
+// Graceful shutdown handling
+process.on("SIGTERM", () => {
+	console.log("SIGTERM received, shutting down gracefully...");
+	stopDataBroadcasting();
+	server.close(() => {
+		console.log("HTTP server closed");
+		process.exit(0);
+	});
+});
+
+process.on("SIGINT", () => {
+	console.log("SIGINT received, shutting down gracefully...");
+	stopDataBroadcasting();
+	server.close(() => {
+		console.log("HTTP server closed");
+		process.exit(0);
+	});
+});

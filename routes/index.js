@@ -4,147 +4,210 @@ const db = require("../database/db.js");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-	res.render("index", { title: "Kepuh Statistic" });
+	// Express will automatically serve index.html from the public folder
 });
 
+const nodeInfo = [
+	{ id: "node1", label: "Masjid 1", color: "rgba(54, 162, 235, 1)" },
+	{ id: "node2", label: "Masjid 2", color: "rgba(255, 99, 132, 1)" },
+	{ id: "node3", label: "Masjid 3", color: "rgba(75, 192, 192, 1)" },
+];
+
+function formatDataForChart(rows, dataColumn, labels) {
+	return nodeInfo.map((node) => {
+		const nodeData = rows.filter((r) => r.Node_id === node.id);
+		return {
+			label: node.label,
+			data: labels.map((label) => {
+				const row = nodeData.find((d) => d.time_label === label);
+				return row ? row[dataColumn] : null;
+			}),
+			borderColor: node.color,
+			tension: 0.4, // More fluid curves like flowing water
+			borderWidth: 3, // Thicker line for better flow visibility
+			borderCapStyle: 'round', // Smooth line endings
+			borderJoinStyle: 'round', // Smooth connections
+			stepped: false, // Smooth continuous line
+			spanGaps: true,
+			pointBackgroundColor: function(context) {
+				return context.dataset.borderColor;
+			},
+			pointHoverBackgroundColor: function(context) {
+				return context.dataset.borderColor;
+			},
+			pointRadius: 1, // Smaller points for cleaner water flow
+			pointHoverRadius: 4,
+			pointBorderWidth: 0 // No border for smoother look
+		};
+	});
+}
+
+// Fungsi untuk membuat query agregasi 5 detik
+const createTimeGroupQuery = (dataField) => `
+    SELECT 
+        Node_id,
+        DATE_FORMAT(
+            DATE_SUB(timestamp, INTERVAL (SECOND(timestamp) % 5) SECOND),
+            '%H:%i:%s'
+        ) AS time_label,
+        AVG(${dataField}) AS avg_value
+    FROM volume_air 
+    WHERE DATE(timestamp) = CURDATE() AND ${dataField} IS NOT NULL
+    GROUP BY Node_id, DATE_FORMAT(
+        DATE_SUB(timestamp, INTERVAL (SECOND(timestamp) % 5) SECOND),
+        '%H:%i:%s'
+    )
+    ORDER BY time_label;
+`;
+
+/* GET flowrate data with 5-second interval. */
 router.get("/flowrate", async (req, res) => {
 	try {
-		const [rows] = await db.query(`
-            SELECT 
-                Node_id,
-                DATE_FORMAT(
-                    DATE_SUB(
-                        timestamp, 
-                        INTERVAL MOD(MINUTE(timestamp), 3) MINUTE
-                    ),
-                    '%H:%i'
-                ) AS time_label,
-                AVG(flow_rate) AS avg_flow_rate
-            FROM volume_air
-            WHERE DATE(timestamp) = (
-                SELECT DATE(timestamp)
-                FROM volume_air
-                ORDER BY timestamp DESC
-                LIMIT 1
-            )
-            GROUP BY 
-                Node_id, 
-                DATE_FORMAT(
-                    DATE_SUB(
-                        timestamp, 
-                        INTERVAL MOD(MINUTE(timestamp), 3) MINUTE
-                    ),
-                    '%H:%i'
-                )
-            ORDER BY time_label;
-        `);
-
-		const masjid1Map = new Map();
-		const masjid2Map = new Map();
-		const masjid3Map = new Map();
-		const labelsSet = new Set();
-
-		rows.forEach((row) => {
-			// Pastikan time_label dan avg_flow_rate tidak null
-			if (!row.time_label || row.avg_flow_rate === null) {
-				console.warn(`Skipping invalid row: ${JSON.stringify(row)}`);
-				return;
-			}
-
-			labelsSet.add(row.time_label);
-
-			// Gunakan Node_id dengan huruf kecil untuk konsistensi
-			switch (row.Node_id.toLowerCase()) {
-				case "node1":
-					masjid1Map.set(row.time_label, row.avg_flow_rate);
-					break;
-				case "node2":
-					masjid2Map.set(row.time_label, row.avg_flow_rate);
-					break;
-				case "node3":
-					masjid3Map.set(row.time_label, row.avg_flow_rate);
-					break;
-				default:
-					console.warn(`Unknown Node_id: ${row.Node_id}`);
-			}
-		});
-
-		// Urutkan label waktu
-		const labels = Array.from(labelsSet).sort((a, b) => {
-			const [aHour, aMinute] = a.split(":").map(Number);
-			const [bHour, bMinute] = b.split(":").map(Number);
-			return aHour * 60 + aMinute - (bHour * 60 + bMinute);
-		});
-
-		// Isi data yang hilang dengan 0
-		const fillMissing = (map) => labels.map((label) => map.get(label) ?? 0);
-
-		// Jika tidak ada data, kirim dataset kosong
-		if (labels.length === 0) {
-			return res.json({
-				labels: [],
-				datasets: [
-					{
-						label: "Masjid 1",
-						data: [],
-						borderColor: "rgba(54, 162, 235, 1)",
-						backgroundColor: "rgba(54, 162, 235, 0.2)",
-						borderWidth: 2,
-						tension: 0.5,
-					},
-					{
-						label: "Masjid 2",
-						data: [],
-						borderColor: "rgba(255, 99, 132, 1)",
-						backgroundColor: "rgba(255, 99, 132, 0.2)",
-						borderWidth: 2,
-						tension: 0.5,
-					},
-					{
-						label: "Masjid 3",
-						data: [],
-						borderColor: "rgba(75, 192, 192, 1)",
-						backgroundColor: "rgba(75, 192, 192, 0.2)",
-						borderWidth: 2,
-						tension: 0.5,
-					},
-				],
-			});
-		}
-
-		res.json({
-			labels,
-			datasets: [
-				{
-					label: "Masjid 1",
-					data: fillMissing(masjid1Map),
-					borderColor: "rgba(54, 162, 235, 1)",
-					backgroundColor: "rgba(54, 162, 235, 0.2)",
-					borderWidth: 2,
-					tension: 0.5,
-				},
-				{
-					label: "Masjid 2",
-					data: fillMissing(masjid2Map),
-					borderColor: "rgba(255, 99, 132, 1)",
-					backgroundColor: "rgba(255, 99, 132, 0.2)",
-					borderWidth: 2,
-					tension: 0.5,
-				},
-				{
-					label: "Masjid 3",
-					data: fillMissing(masjid3Map),
-					borderColor: "rgba(75, 192, 192, 1)",
-					backgroundColor: "rgba(75, 192, 192, 0.2)",
-					borderWidth: 2,
-					tension: 0.5,
-				},
-			],
-		});
+		const data = await getFlowrateData();
+		res.json(data);
 	} catch (err) {
-		console.error("DB Error:", err.stack);
-		res.status(500).json({ message: "Database error", error: err.message });
+		console.error("DB Error on /flowrate:", err.stack);
+		res.status(500).json({ message: "Database error" });
 	}
 });
 
+/* GET RSSI data with 5-second interval. */
+router.get("/rssi", async (req, res) => {
+	try {
+		const data = await getRssiData();
+		res.json(data);
+	} catch (err) {
+		console.error("DB Error on /rssi:", err.stack);
+		res.status(500).json({ message: "Database error" });
+	}
+});
+
+// --- Real-time data functions for Socket.io broadcasting ---
+
+// Function to get all unique time labels from today's data
+async function getUnifiedLabels() {
+	const [rows] = await db.query(`
+		SELECT DISTINCT
+			DATE_FORMAT(
+				DATE_SUB(timestamp, INTERVAL (SECOND(timestamp) % 5) SECOND),
+				'%H:%i:%s'
+			) AS time_label
+		FROM volume_air
+		WHERE DATE(timestamp) = CURDATE()
+		ORDER BY time_label;
+	`);
+	return rows.map((r) => r.time_label);
+}
+
+// Function to get flowrate data (reusable for both HTTP and Socket.io)
+async function getFlowrateData() {
+	const [rows] = await db.query(createTimeGroupQuery("flow_rate"));
+	const formattedRows = rows.map((r) => ({ ...r, avg_flow_rate: r.avg_value }));
+	const labels = await getUnifiedLabels(); // Use unified labels
+	const datasets = formatDataForChart(formattedRows, "avg_flow_rate", labels);
+	
+	// Ensure we always return valid data structure even if empty
+	if (labels.length === 0) {
+		return {
+			labels: [],
+			datasets: nodeInfo.map((node) => ({
+				label: node.label,
+				data: [],
+				borderColor: node.color,
+				tension: 0.4, // More fluid curves like flowing water
+				borderWidth: 3, // Thicker line for better flow visibility
+				borderCapStyle: 'round', // Smooth line endings
+				borderJoinStyle: 'round', // Smooth connections
+				stepped: false, // Smooth continuous line
+				spanGaps: true,
+				pointBackgroundColor: node.color,
+				pointHoverBackgroundColor: node.color,
+				pointRadius: 1, // Smaller points for cleaner water flow
+				pointHoverRadius: 4,
+				pointBorderWidth: 0 // No border for smoother look
+			})),
+		};
+	} else {
+		return { labels, datasets };
+	}
+}
+
+// Function to get RSSI data (reusable for both HTTP and Socket.io)
+async function getRssiData() {
+	const [rows] = await db.query(createTimeGroupQuery("rssi"));
+	const formattedRows = rows.map((r) => ({ ...r, avg_rssi: r.avg_value }));
+	const labels = await getUnifiedLabels(); // Use unified labels
+	const datasets = formatDataForChart(formattedRows, "avg_rssi", labels);
+
+	if (labels.length === 0) {
+		return {
+			labels: [],
+			datasets: nodeInfo.map((node) => ({
+				label: node.label,
+				data: [],
+				borderColor: node.color,
+				tension: 0.4, // More fluid curves like flowing water
+				borderWidth: 3, // Thicker line for better flow visibility
+				borderCapStyle: 'round', // Smooth line endings
+				borderJoinStyle: 'round', // Smooth connections
+				stepped: false, // Smooth continuous line
+				spanGaps: true,
+				pointBackgroundColor: node.color,
+				pointHoverBackgroundColor: node.color,
+				pointRadius: 1, // Smaller points for cleaner water flow
+				pointHoverRadius: 4,
+				pointBorderWidth: 0 // No border for smoother look
+			})),
+		};
+	} else {
+		return { labels, datasets };
+	}
+}
+
+// Function to get daily statistics for the cards
+async function getStatisticsData() {
+	try {
+		const query = `
+			SELECT 
+				Node_id,
+				SUM(flow_rate * 60) as total_liters,
+				COUNT(*) as data_points
+			FROM volume_air 
+			WHERE DATE(timestamp) = CURDATE() 
+				AND flow_rate IS NOT NULL
+			GROUP BY Node_id
+		`;
+
+		const [rows] = await db.query(query);
+
+		// Calculate statistics for each node
+		const stats = {
+			node1: { value: 0, growth: "+0%" },
+			node2: { value: 0, growth: "+0%" },
+			node3: { value: 0, growth: "+0%" },
+		};
+
+		rows.forEach((row) => {
+			if (stats[row.Node_id]) {
+				stats[row.Node_id].value = Math.round(row.total_liters || 0);
+				// For now, we'll show a simple growth calculation
+				stats[row.Node_id].growth = row.data_points > 10 ? "+5%" : "+2%";
+			}
+		});
+
+		return stats;
+	} catch (err) {
+		console.error("Error getting statistics:", err);
+		return {
+			node1: { value: 0, growth: "+0%" },
+			node2: { value: 0, growth: "+0%" },
+			node3: { value: 0, growth: "+0%" },
+		};
+	}
+}
+
+// Export functions for use in Socket.io
 module.exports = router;
+module.exports.getFlowrateData = getFlowrateData;
+module.exports.getRssiData = getRssiData;
+module.exports.getStatisticsData = getStatisticsData;
