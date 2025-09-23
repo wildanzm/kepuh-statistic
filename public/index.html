@@ -14,6 +14,9 @@
 
 <body class="bg-gray-50">
 	<div class="container mx-auto p-4 md:p-6">
+		<!-- Notification Container -->
+		<div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2 max-w-sm"></div>
+
 		<h1 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">Dashboard Desa Kepuh</h1>
 		<div class="flex flex-col lg:flex-row gap-6">
 			<div class="w-full lg:w-1/4 space-y-6">
@@ -99,37 +102,111 @@
 					<div id="content-kontrol" style="display: none;" class="p-4">
 						<h3 class="text-xl font-semibold mb-4 text-gray-800">Kontrol Pompa Air</h3>
 						<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-							<div class="bg-gray-100 p-4 rounded-lg shadow-sm">
-								<h4 class="font-bold text-lg text-blue-600">Masjid 1</h4>
-								<p class="text-gray-600 mb-2">Status: <span id="kontrol-status-1"
-										class="font-bold text-gray-800">Tidak Diketahui</span></p>
-								<div class="flex gap-2">
-									<button onclick="controlPipe('node1', 'OPEN')"
-										class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Buka</button>
-									<button onclick="controlPipe('node1', 'CLOSE')"
-										class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Tutup</button>
+							<!-- Masjid 1 -->
+							<div
+								class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+								<div class="flex items-center justify-between mb-4">
+									<h4 class="font-bold text-xl text-blue-600">Masjid 1</h4>
+									<div id="pump-indicator-1" class="relative">
+										<div class="w-4 h-4 bg-gray-400 rounded-full animate-pulse"></div>
+										<div
+											class="absolute -top-1 -right-1 w-6 h-6 bg-gray-300 rounded-full opacity-30 animate-ping">
+										</div>
+									</div>
+								</div>
+								<div class="mb-4">
+									<div class="flex items-center gap-2 mb-2">
+										<span class="text-gray-600 text-sm">Status:</span>
+										<span id="kontrol-status-1"
+											class="font-bold text-gray-500 text-sm px-2 py-1 bg-gray-100 rounded-full">
+											🔄 Memuat...
+										</span>
+									</div>
+									<div class="text-xs text-gray-500">
+										Update terakhir: <span id="last-update-1">-</span>
+									</div>
+								</div>
+								<div class="flex gap-3">
+									<button id="btn-open-1" onclick="controlPipe('node1', 'OPEN')"
+										class="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+										<span>🚰</span> Buka
+									</button>
+									<button id="btn-close-1" onclick="controlPipe('node1', 'CLOSE')"
+										class="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+										<span>🔒</span> Tutup
+									</button>
 								</div>
 							</div>
-							<div class="bg-gray-100 p-4 rounded-lg shadow-sm">
-								<h4 class="font-bold text-lg text-red-500">Masjid 2</h4>
-								<p class="text-gray-600 mb-2">Status: <span id="kontrol-status-2"
-										class="font-bold text-gray-800">Tidak Diketahui</span></p>
-								<div class="flex gap-2">
-									<button onclick="controlPipe('node2', 'OPEN')"
-										class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Buka</button>
-									<button onclick="controlPipe('node2', 'CLOSE')"
-										class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Tutup</button>
+
+							<!-- Masjid 2 -->
+							<div
+								class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+								<div class="flex items-center justify-between mb-4">
+									<h4 class="font-bold text-xl text-red-500">Masjid 2</h4>
+									<div id="pump-indicator-2" class="relative">
+										<div class="w-4 h-4 bg-gray-400 rounded-full animate-pulse"></div>
+										<div
+											class="absolute -top-1 -right-1 w-6 h-6 bg-gray-300 rounded-full opacity-30 animate-ping">
+										</div>
+									</div>
+								</div>
+								<div class="mb-4">
+									<div class="flex items-center gap-2 mb-2">
+										<span class="text-gray-600 text-sm">Status:</span>
+										<span id="kontrol-status-2"
+											class="font-bold text-gray-500 text-sm px-2 py-1 bg-gray-100 rounded-full">
+											🔄 Memuat...
+										</span>
+									</div>
+									<div class="text-xs text-gray-500">
+										Update terakhir: <span id="last-update-2">-</span>
+									</div>
+								</div>
+								<div class="flex gap-3">
+									<button id="btn-open-2" onclick="controlPipe('node2', 'OPEN')"
+										class="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+										<span>🚰</span> Buka
+									</button>
+									<button id="btn-close-2" onclick="controlPipe('node2', 'CLOSE')"
+										class="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+										<span>🔒</span> Tutup
+									</button>
 								</div>
 							</div>
-							<div class="bg-gray-100 p-4 rounded-lg shadow-sm">
-								<h4 class="font-bold text-lg text-green-600">Masjid 3</h4>
-								<p class="text-gray-600 mb-2">Status: <span id="kontrol-status-3"
-										class="font-bold text-gray-800">Tidak Diketahui</span></p>
-								<div class="flex gap-2">
-									<button onclick="controlPipe('node3', 'OPEN')"
-										class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Buka</button>
-									<button onclick="controlPipe('node3', 'CLOSE')"
-										class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">Tutup</button>
+
+							<!-- Masjid 3 -->
+							<div
+								class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+								<div class="flex items-center justify-between mb-4">
+									<h4 class="font-bold text-xl text-green-600">Masjid 3</h4>
+									<div id="pump-indicator-3" class="relative">
+										<div class="w-4 h-4 bg-gray-400 rounded-full animate-pulse"></div>
+										<div
+											class="absolute -top-1 -right-1 w-6 h-6 bg-gray-300 rounded-full opacity-30 animate-ping">
+										</div>
+									</div>
+								</div>
+								<div class="mb-4">
+									<div class="flex items-center gap-2 mb-2">
+										<span class="text-gray-600 text-sm">Status:</span>
+										<span id="kontrol-status-3"
+											class="font-bold text-gray-500 text-sm px-2 py-1 bg-gray-100 rounded-full">
+											🔄 Memuat...
+										</span>
+									</div>
+									<div class="text-xs text-gray-500">
+										Update terakhir: <span id="last-update-3">-</span>
+									</div>
+								</div>
+								<div class="flex gap-3">
+									<button id="btn-open-3" onclick="controlPipe('node3', 'OPEN')"
+										class="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+										<span>🚰</span> Buka
+									</button>
+									<button id="btn-close-3" onclick="controlPipe('node3', 'CLOSE')"
+										class="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+										<span>🔒</span> Tutup
+									</button>
 								</div>
 							</div>
 						</div>
@@ -202,17 +279,17 @@
 							radius: 1, // Smaller points for cleaner water flow
 							hoverRadius: 4,
 							borderWidth: 0, // No border for smoother look
-							pointBackgroundColor: function(context) {
+							pointBackgroundColor: function (context) {
 								return context.dataset.borderColor;
 							},
-							pointHoverBackgroundColor: function(context) {
+							pointHoverBackgroundColor: function (context) {
 								return context.dataset.borderColor;
 							}
 						}
 					},
 					scales: {
 						x: {
-							title: { display: true, text: "Waktu (HH:MM:SS)" },
+							title: { display: true, text: "Waktu" },
 							ticks: {
 								maxTicksLimit: 10 // Limit number of labels shown
 							}
@@ -279,17 +356,17 @@
 							radius: 1, // Smaller points for cleaner water flow
 							hoverRadius: 4,
 							borderWidth: 0, // No border for smoother look
-							pointBackgroundColor: function(context) {
+							pointBackgroundColor: function (context) {
 								return context.dataset.borderColor;
 							},
-							pointHoverBackgroundColor: function(context) {
+							pointHoverBackgroundColor: function (context) {
 								return context.dataset.borderColor;
 							}
 						}
 					},
 					scales: {
 						x: {
-							title: { display: true, text: "Waktu (HH:MM:SS)" },
+							title: { display: true, text: "Waktu" },
 							ticks: {
 								maxTicksLimit: 10 // Limit number of labels shown
 							}
@@ -345,7 +422,7 @@
 					flowrateChart.destroy();
 					flowrateChart = null;
 				}
-				
+
 				// Use latest data if available, otherwise fetch from server
 				if (window.latestFlowrateData) {
 					createFlowrateChart(window.latestFlowrateData);
@@ -366,7 +443,7 @@
 					rssiChart.destroy();
 					rssiChart = null;
 				}
-				
+
 				// Use latest data if available, otherwise fetch from server
 				if (window.latestRssiData) {
 					createRssiChart(window.latestRssiData);
@@ -389,6 +466,121 @@
 		// --- Socket.io and Pump Control ---
 		const socket = io();
 
+		// Pump status tracking
+		const pumpStatus = {
+			node1: { status: 'unknown', lastUpdate: null },
+			node2: { status: 'unknown', lastUpdate: null },
+			node3: { status: 'unknown', lastUpdate: null }
+		};
+
+		// Custom Notification System
+		function showNotification(message, type = 'info', duration = 5000) {
+			const container = document.getElementById('notification-container');
+			const notification = document.createElement('div');
+
+			const icons = {
+				success: '✅',
+				error: '❌',
+				warning: '⚠️',
+				info: 'ℹ️',
+				loading: '🔄'
+			};
+
+			const colors = {
+				success: 'bg-green-500 border-green-600',
+				error: 'bg-red-500 border-red-600',
+				warning: 'bg-yellow-500 border-yellow-600',
+				info: 'bg-blue-500 border-blue-600',
+				loading: 'bg-gray-500 border-gray-600'
+			};
+
+			notification.className = `${colors[type]} border-l-4 text-white p-4 rounded-r-lg shadow-lg transform transition-all duration-300 ease-in-out translate-x-full opacity-0`;
+			notification.innerHTML = `
+				<div class="flex items-center gap-3">
+					<span class="text-xl">${icons[type]}</span>
+					<div class="flex-1">
+						<div class="font-semibold text-sm">${message}</div>
+						<div class="text-xs opacity-75">${new Date().toLocaleTimeString()}</div>
+					</div>
+					<button class="text-white hover:text-gray-200 font-bold text-lg leading-none" onclick="this.parentElement.parentElement.remove()">×</button>
+				</div>
+			`;
+
+			container.appendChild(notification);
+
+			// Animate in
+			setTimeout(() => {
+				notification.classList.remove('translate-x-full', 'opacity-0');
+			}, 100);
+
+			// Auto remove
+			setTimeout(() => {
+				notification.classList.add('translate-x-full', 'opacity-0');
+				setTimeout(() => notification.remove(), 300);
+			}, duration);
+		}
+
+		// Update pump status display
+		function updatePumpStatus(nodeId, status, timestamp = null) {
+			const nodeNumber = nodeId.replace('node', '');
+			const statusElement = document.getElementById(`kontrol-status-${nodeNumber}`);
+			const lastUpdateElement = document.getElementById(`last-update-${nodeNumber}`);
+			const indicatorElement = document.getElementById(`pump-indicator-${nodeNumber}`);
+			const openBtn = document.getElementById(`btn-open-${nodeNumber}`);
+			const closeBtn = document.getElementById(`btn-close-${nodeNumber}`);
+
+			// Update status tracking
+			pumpStatus[nodeId].status = status;
+			pumpStatus[nodeId].lastUpdate = timestamp || new Date();
+
+			// Update status text and styling
+			if (status === 'open') {
+				statusElement.innerHTML = '🟢 Terbuka';
+				statusElement.className = 'font-bold text-green-700 text-sm px-3 py-1 bg-green-100 rounded-full border border-green-300';
+				indicatorElement.innerHTML = `
+					<div class="w-4 h-4 bg-green-500 rounded-full"></div>
+					<div class="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full opacity-50 animate-ping"></div>
+				`;
+			} else if (status === 'closed') {
+				statusElement.innerHTML = '🔴 Tertutup';
+				statusElement.className = 'font-bold text-red-700 text-sm px-3 py-1 bg-red-100 rounded-full border border-red-300';
+				indicatorElement.innerHTML = `
+					<div class="w-4 h-4 bg-red-500 rounded-full"></div>
+					<div class="absolute -top-1 -right-1 w-6 h-6 bg-red-400 rounded-full opacity-50 animate-ping"></div>
+				`;
+			} else if (status === 'connecting') {
+				statusElement.innerHTML = '🟡 Menghubungi...';
+				statusElement.className = 'font-bold text-yellow-700 text-sm px-3 py-1 bg-yellow-100 rounded-full border border-yellow-300';
+				indicatorElement.innerHTML = `
+					<div class="w-4 h-4 bg-yellow-500 rounded-full animate-pulse"></div>
+					<div class="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full opacity-50 animate-ping"></div>
+				`;
+				// Disable buttons while connecting
+				openBtn.disabled = true;
+				closeBtn.disabled = true;
+			} else {
+				statusElement.innerHTML = '⚪ Tidak Diketahui';
+				statusElement.className = 'font-bold text-gray-700 text-sm px-3 py-1 bg-gray-100 rounded-full border border-gray-300';
+				indicatorElement.innerHTML = `
+					<div class="w-4 h-4 bg-gray-400 rounded-full animate-pulse"></div>
+					<div class="absolute -top-1 -right-1 w-6 h-6 bg-gray-300 rounded-full opacity-30 animate-ping"></div>
+				`;
+			}
+
+			// Re-enable buttons if not connecting
+			if (status !== 'connecting') {
+				openBtn.disabled = false;
+				closeBtn.disabled = false;
+			}
+
+			// Update last update time
+			if (timestamp) {
+				lastUpdateElement.textContent = timestamp.toLocaleTimeString();
+			} else {
+				lastUpdateElement.textContent = new Date().toLocaleTimeString();
+			}
+		}
+
 		// Function to show console updates (since visual indicator was removed)
 		function logUpdateStatus(message) {
 			console.log(`[Real-time Update] ${message}`);
@@ -398,11 +590,21 @@
 			console.log('✅ Terhubung ke server via Socket.io');
 			console.log('✅ Real-time updates enabled');
 			logUpdateStatus('Connected - Real-time Active');
+			showNotification('Terhubung ke server', 'success', 3000);
+
+			// Request current pump status
+			socket.emit('pump:status:request');
 		});
 
 		socket.on('disconnect', () => {
 			console.log('❌ Disconnected from server');
 			logUpdateStatus('Disconnected');
+			showNotification('Koneksi terputus dari server', 'warning', 5000);
+
+			// Set all pumps to unknown status
+			['node1', 'node2', 'node3'].forEach(nodeId => {
+				updatePumpStatus(nodeId, 'unknown');
+			});
 		});
 
 		// --- Real-time Chart Updates via Socket.io ---
@@ -419,7 +621,6 @@
 
 			// Update RSSI Chart
 			if (data.rssi && data.rssi.labels && data.rssi.datasets) {
-				console.log('📡 Updating RSSI chart with data:', data.rssi);
 				updateChart('rssi', data.rssi);
 			} else {
 				console.error('❌ Invalid RSSI data in unified update:', data.rssi);
@@ -433,9 +634,6 @@
 
 		// Function to update charts with new data
 		function updateChart(canvasId, data) {
-			console.log(`🔄 Updating chart ${canvasId} with data:`, data);
-			console.log(`🔄 Data structure: labels=${data.labels?.length || 0}, datasets=${data.datasets?.length || 0}`);
-
 			// Always destroy existing chart and create a new one for reliable updates
 			if (canvasId === 'flowrate') {
 				if (flowrateChart) {
@@ -450,7 +648,7 @@
 				}
 				createRssiChart(data);
 			}
-			
+
 			// Cache the latest data
 			if (canvasId === 'flowrate') {
 				window.latestFlowrateData = data;
@@ -494,12 +692,47 @@
 		}
 
 		function controlPipe(nodeId, action) {
+			const nodeNumber = nodeId.replace('node', '');
+			const masjidName = `Masjid ${nodeNumber}`;
+
 			console.log(`Mengirim perintah: ${action} ke ${nodeId}`);
+
+			// Show loading state
+			updatePumpStatus(nodeId, 'connecting');
+			showNotification(`Mengirim perintah ${action.toLowerCase()} ke ${masjidName}...`, 'loading', 3000);
+
 			socket.emit('pipe:control', { nodeId, action });
 		}
 
 		socket.on('pipe:control:feedback', (data) => {
-			alert(data.message); // Simple feedback
+			const { nodeId, action, status, message } = data;
+			const nodeNumber = nodeId ? nodeId.replace('node', '') : '';
+			const masjidName = nodeNumber ? `Masjid ${nodeNumber}` : 'Pompa';
+
+			if (status === 'success') {
+				// Update status based on action
+				const newStatus = action === 'OPEN' ? 'open' : 'closed';
+				updatePumpStatus(nodeId, newStatus);
+				showNotification(`${masjidName} berhasil ${action === 'OPEN' ? 'dibuka' : 'ditutup'}!`, 'success');
+			} else {
+				// Reset to unknown status on error
+				updatePumpStatus(nodeId, 'unknown');
+				showNotification(`Gagal mengontrol ${masjidName}: ${message}`, 'error');
+			}
+		});
+
+		// Listen for real-time pump status updates from Blynk polling
+		socket.on('pump:status:update', (data) => {
+			const { timestamp, statuses } = data;
+
+			// Update status for each pump
+			Object.entries(statuses).forEach(([nodeId, status]) => {
+				updatePumpStatus(nodeId, status, new Date(timestamp));
+			});
+
+			// Show notification for sync update (less intrusive, info type)
+			const statusCount = Object.keys(statuses).length;
+			showNotification(`Status ${statusCount} pompa disinkronisasi dengan Blynk`, 'info', 2000);
 		});
 
 		// Initialize first tab content

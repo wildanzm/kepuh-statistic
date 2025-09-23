@@ -2,6 +2,40 @@ const express = require("express");
 const router = express.Router();
 const db = require("../database/db.js");
 
+// Middleware untuk bearer token authentication pada endpoint microcontroller
+const authenticateToken = (req, res, next) => {
+	const authHeader = req.headers["authorization"];
+	const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+
+	const expectedToken = process.env.MICROCONTROLLER_TOKEN;
+
+	if (!expectedToken) {
+		console.error("❌ MICROCONTROLLER_TOKEN tidak ditemukan di environment!");
+		return res.status(500).json({
+			success: false,
+			message: "Server configuration error",
+		});
+	}
+
+	if (!token) {
+		return res.status(401).json({
+			success: false,
+			message: "Access token required. Format: Bearer <token>",
+		});
+	}
+
+	if (token !== expectedToken) {
+		console.log(`❌ Invalid token attempt: ${token.substring(0, 10)}...`);
+		return res.status(403).json({
+			success: false,
+			message: "Invalid access token",
+		});
+	}
+
+	console.log(`✅ Valid microcontroller token authenticated`);
+	next();
+};
+
 /* GET home page. */
 router.get("/", function (req, res, next) {
 	// Express will automatically serve index.html from the public folder
@@ -25,19 +59,19 @@ function formatDataForChart(rows, dataColumn, labels) {
 			borderColor: node.color,
 			tension: 0.4, // More fluid curves like flowing water
 			borderWidth: 3, // Thicker line for better flow visibility
-			borderCapStyle: 'round', // Smooth line endings
-			borderJoinStyle: 'round', // Smooth connections
+			borderCapStyle: "round", // Smooth line endings
+			borderJoinStyle: "round", // Smooth connections
 			stepped: false, // Smooth continuous line
 			spanGaps: true,
-			pointBackgroundColor: function(context) {
+			pointBackgroundColor: function (context) {
 				return context.dataset.borderColor;
 			},
-			pointHoverBackgroundColor: function(context) {
+			pointHoverBackgroundColor: function (context) {
 				return context.dataset.borderColor;
 			},
 			pointRadius: 1, // Smaller points for cleaner water flow
 			pointHoverRadius: 4,
-			pointBorderWidth: 0 // No border for smoother look
+			pointBorderWidth: 0, // No border for smoother look
 		};
 	});
 }
@@ -82,6 +116,107 @@ router.get("/rssi", async (req, res) => {
 	}
 });
 
+/* POST endpoint untuk menerima data dari microcontroller */
+router.post("/data", authenticateToken, async (req, res) => {
+	try {
+		// Validasi data yang masuk
+		const { node_id, flow_rate, rssi, timestamp } = req.body;
+
+		// Validasi required fields
+		if (!node_id) {
+			return res.status(400).json({
+				success: false,
+				message: "node_id wajib diisi",
+			});
+		}
+
+		// Validasi format node_id (harus sesuai dengan yang ada di database)
+		const validNodeIds = ["node1", "node2", "node3"];
+		if (!validNodeIds.includes(node_id)) {
+			return res.status(400).json({
+				success: false,
+				message: `node_id harus salah satu dari: ${validNodeIds.join(", ")}`,
+			});
+		}
+
+		// Validasi tipe data numerik
+		if (flow_rate !== undefined && (isNaN(flow_rate) || flow_rate < 0)) {
+			return res.status(400).json({
+				success: false,
+				message: "flow_rate harus berupa angka positif",
+			});
+		}
+
+		if (rssi !== undefined && isNaN(rssi)) {
+			return res.status(400).json({
+				success: false,
+				message: "rssi harus berupa angka",
+			});
+		}
+
+		// Gunakan timestamp dari request atau timestamp saat ini
+		const finalTimestamp = timestamp ? new Date(timestamp) : new Date();
+
+		// Validasi timestamp
+		if (isNaN(finalTimestamp.getTime())) {
+			return res.status(400).json({
+				success: false,
+				message: "Format timestamp tidak valid",
+			});
+		}
+
+		// Simpan data ke database
+		const query = `
+			INSERT INTO volume_air (Node_id, flow_rate, rssi, timestamp)
+			VALUES (?, ?, ?, ?)
+		`;
+
+		await db.query(query, [node_id, flow_rate || null, rssi || null, finalTimestamp]);
+
+		// Response sukses
+		res.status(201).json({
+			success: true,
+			message: "Data berhasil disimpan",
+			data: {
+				node_id: node_id,
+				flow_rate: flow_rate || null,
+				rssi: rssi || null,
+				timestamp: finalTimestamp.toISOString(),
+			},
+		});
+
+		console.log(`Data diterima dari ${node_id}: flow_rate=${flow_rate}, rssi=${rssi}`);
+	} catch (err) {
+		console.error("Error saving microcontroller data:", err.stack);
+		res.status(500).json({
+			success: false,
+			message: "Terjadi kesalahan server",
+		});
+	}
+});
+
+/* GET endpoint untuk cek status API */
+router.get("/api/status", (req, res) => {
+	res.json({
+		success: true,
+		message: "Kepuh Statistic API is running",
+		timestamp: new Date().toISOString(),
+		endpoints: {
+			"POST /data": "Mengirim data dari microcontroller (Requires Bearer Token)",
+			"GET /flowrate": "Mengambil data grafik aliran air",
+			"GET /rssi": "Mengambil data grafik kekuatan sinyal",
+			"GET /api/status": "Mengecek status API",
+		},
+		authentication: {
+			"POST /data": {
+				type: "Bearer Token",
+				header: "Authorization: Bearer <token>",
+				description: "Token diperlukan untuk autentikasi microcontroller",
+			},
+		},
+	});
+});
+
 // --- Real-time data functions for Socket.io broadcasting ---
 
 // Function to get all unique time labels from today's data
@@ -105,7 +240,7 @@ async function getFlowrateData() {
 	const formattedRows = rows.map((r) => ({ ...r, avg_flow_rate: r.avg_value }));
 	const labels = await getUnifiedLabels(); // Use unified labels
 	const datasets = formatDataForChart(formattedRows, "avg_flow_rate", labels);
-	
+
 	// Ensure we always return valid data structure even if empty
 	if (labels.length === 0) {
 		return {
@@ -116,15 +251,15 @@ async function getFlowrateData() {
 				borderColor: node.color,
 				tension: 0.4, // More fluid curves like flowing water
 				borderWidth: 3, // Thicker line for better flow visibility
-				borderCapStyle: 'round', // Smooth line endings
-				borderJoinStyle: 'round', // Smooth connections
+				borderCapStyle: "round", // Smooth line endings
+				borderJoinStyle: "round", // Smooth connections
 				stepped: false, // Smooth continuous line
 				spanGaps: true,
 				pointBackgroundColor: node.color,
 				pointHoverBackgroundColor: node.color,
 				pointRadius: 1, // Smaller points for cleaner water flow
 				pointHoverRadius: 4,
-				pointBorderWidth: 0 // No border for smoother look
+				pointBorderWidth: 0, // No border for smoother look
 			})),
 		};
 	} else {
@@ -148,15 +283,15 @@ async function getRssiData() {
 				borderColor: node.color,
 				tension: 0.4, // More fluid curves like flowing water
 				borderWidth: 3, // Thicker line for better flow visibility
-				borderCapStyle: 'round', // Smooth line endings
-				borderJoinStyle: 'round', // Smooth connections
+				borderCapStyle: "round", // Smooth line endings
+				borderJoinStyle: "round", // Smooth connections
 				stepped: false, // Smooth continuous line
 				spanGaps: true,
 				pointBackgroundColor: node.color,
 				pointHoverBackgroundColor: node.color,
 				pointRadius: 1, // Smaller points for cleaner water flow
 				pointHoverRadius: 4,
-				pointBorderWidth: 0 // No border for smoother look
+				pointBorderWidth: 0, // No border for smoother look
 			})),
 		};
 	} else {

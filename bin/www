@@ -14,13 +14,18 @@ app.set("port", port);
 const server = http.createServer(app);
 
 // --- Konfigurasi Blynk ---
-// Simpan Auth Token di file .env Anda
-const BLYNK_AUTH_TOKENS = {
-	node1: process.env.BLYNK_AUTH_TOKEN_NODE1,
-	node2: process.env.BLYNK_AUTH_TOKEN_NODE2,
-	node3: process.env.BLYNK_AUTH_TOKEN_NODE3,
+// Menggunakan 1 token dengan virtual pin berbeda untuk setiap masjid
+const BLYNK_AUTH_TOKEN = process.env.BLYNK_AUTH_TOKEN; // Satu token untuk semua kontroler
+
+// FIXED: Hardcode URL untuk memastikan tidak ada override
+const BLYNK_API_URL = "https://blynk.cloud/external/api"; // NO TRAILING SLASH!
+
+// Mapping virtual pin untuk setiap masjid
+const VIRTUAL_PIN_MAPPING = {
+	node1: "v0", // V0 = Masjid 1
+	node2: "v1", // V1 = Masjid 2
+	node3: "v2", // V2 = Masjid 3
 };
-const BLYNK_API_URL = "https://blynk.cloud/external/api";
 
 // --- Setup WebSocket (Socket.io) ---
 const io = new Server(server, {
@@ -36,27 +41,69 @@ io.on("connection", (socket) => {
 	// Event handler untuk kontrol pompa
 	socket.on("pipe:control", async (data) => {
 		const { nodeId, action } = data;
-		console.log(`Perintah Blynk diterima untuk ${nodeId}: ${action}`);
 
-		const authToken = BLYNK_AUTH_TOKENS[nodeId];
-		if (!authToken) {
-			console.error(`Auth Token tidak ditemukan untuk ${nodeId}`);
-			socket.emit("pipe:control:feedback", { status: "error", message: `Node ${nodeId} tidak terdaftar.` });
+		// Cek apakah token tersedia
+		if (!BLYNK_AUTH_TOKEN) {
+			socket.emit("pipe:control:feedback", {
+				status: "error",
+				message: "Konfigurasi Blynk belum diatur. Cek BLYNK_AUTH_TOKEN.",
+			});
 			return;
 		}
 
-		// Tentukan nilai (1 untuk OPEN, 0 untuk CLOSE) dan Virtual Pin
+		// Cek apakah nodeId valid dan dapatkan virtual pin
+		const virtualPin = VIRTUAL_PIN_MAPPING[nodeId];
+		if (!virtualPin) {
+			socket.emit("pipe:control:feedback", {
+				status: "error",
+				message: `Node ${nodeId} tidak terdaftar dalam sistem.`,
+			});
+			return;
+		}
+
+		// Tentukan nilai (1 untuk OPEN, 0 untuk CLOSE)
 		const value = action.toUpperCase() === "OPEN" ? 1 : 0;
-		const virtualPin = "v1"; // Asumsi V1 digunakan untuk kontrol relay
 
 		try {
-			// Panggil Blynk HTTP API
-			await axios.get(`${BLYNK_API_URL}/update?token=${authToken}&${virtualPin}=${value}`);
-			console.log(`Perintah ke Blynk untuk ${nodeId} berhasil dikirim.`);
-			socket.emit("pipe:control:feedback", { status: "success", message: `Perintah ${action} untuk ${nodeId} berhasil dikirim.` });
+			// FIXED: Pastikan URL dibentuk dengan benar
+			const blynkUrl = `${BLYNK_API_URL}/update?token=${BLYNK_AUTH_TOKEN}&${virtualPin}=${value}`;
+
+			const response = await axios.get(blynkUrl, {
+				timeout: 10000, // 10 second timeout
+				headers: {
+					"User-Agent": "Kepuh-Statistic/1.0",
+				},
+			});
+
+			console.log(`✅ Perintah ke Blynk untuk ${nodeId} (${virtualPin.toUpperCase()}) berhasil dikirim: ${action} (${value})`);
+
+			socket.emit("pipe:control:feedback", {
+				nodeId: nodeId,
+				action: action,
+				status: "success",
+				message: `Perintah ${action} untuk ${nodeId} berhasil dikirim via ${virtualPin.toUpperCase()}.`,
+			});
 		} catch (error) {
-			console.error(`Gagal mengirim perintah ke Blynk untuk ${nodeId}:`, error.response ? error.response.data : error.message);
-			socket.emit("pipe:control:feedback", { status: "error", message: `Gagal mengirim perintah. Cek konsol server.` });
+			console.error(`❌ Gagal mengirim perintah ke Blynk untuk ${nodeId}:`);
+			console.error(`❌ Error details:`, {
+				message: error.message,
+				response: error.response
+					? {
+							status: error.response.status,
+							statusText: error.response.statusText,
+							data: error.response.data,
+					  }
+					: "No response",
+				request: error.request ? "Request made but no response" : "Request not made",
+			});
+
+			const errorMessage = error.response?.data?.error?.message || error.message || "Unknown error";
+			socket.emit("pipe:control:feedback", {
+				nodeId: nodeId,
+				action: action,
+				status: "error",
+				message: `Gagal mengirim perintah ${action} untuk ${nodeId}: ${errorMessage}`,
+			});
 		}
 	});
 
@@ -67,17 +114,65 @@ io.on("connection", (socket) => {
 
 // --- Real-time Data Broadcasting ---
 let dataUpdateInterval;
+let pumpStatusInterval;
+
+// Function to get current pump status from Blynk
+async function getPumpStatusFromBlynk() {
+	const statuses = {};
+
+	try {
+		for (const [nodeId, virtualPin] of Object.entries(VIRTUAL_PIN_MAPPING)) {
+			try {
+				const blynkGetUrl = `${BLYNK_API_URL}/get?token=${BLYNK_AUTH_TOKEN}&${virtualPin}`;
+
+				const response = await axios.get(blynkGetUrl, {
+					timeout: 5000,
+					headers: { "User-Agent": "Kepuh-Statistic/1.0" },
+				});
+
+				// Blynk returns array with the value, e.g., ["1"] for ON, ["0"] for OFF
+				const value = Array.isArray(response.data) ? response.data[0] : response.data;
+				const status = value === "1" || value === 1 ? "open" : "closed";
+				statuses[nodeId] = status;
+			} catch (error) {
+				console.error(`❌ Failed to get status for ${nodeId}:`, error.message);
+				statuses[nodeId] = "unknown";
+			}
+		}
+	} catch (error) {
+		console.error("❌ Error polling pump status from Blynk:", error.message);
+	}
+
+	return statuses;
+}
+
+// Function to broadcast pump status updates to all clients
+async function broadcastPumpStatusUpdates() {
+	try {
+		const clientCount = io.sockets.sockets.size;
+		if (clientCount === 0) {
+			return;
+		}
+
+		const pumpStatuses = await getPumpStatusFromBlynk();
+
+		// Send updated status to all clients
+		io.emit("pump:status:update", {
+			timestamp: new Date(),
+			statuses: pumpStatuses,
+		});
+	} catch (error) {
+		console.error("❌ Error broadcasting pump status updates:", error.message);
+	}
+}
 
 // Function to broadcast fresh data to all connected clients
 async function broadcastDataUpdates() {
 	try {
 		const clientCount = io.sockets.sockets.size;
 		if (clientCount === 0) {
-			console.log("No clients connected, skipping broadcast.");
 			return;
 		}
-
-		console.log(`Broadcasting data updates to ${clientCount} connected clients`);
 
 		// Get fresh data from database
 		const [flowrateData, rssiData, statisticsData] = await Promise.all([getFlowrateData(), getRssiData(), getStatisticsData()]);
@@ -88,8 +183,6 @@ async function broadcastDataUpdates() {
 			rssi: rssiData,
 			statistics: statisticsData,
 		});
-
-		console.log("Data update broadcast completed successfully.");
 	} catch (err) {
 		console.error("Error broadcasting data updates:", err);
 	}
@@ -97,7 +190,6 @@ async function broadcastDataUpdates() {
 
 // Start periodic data broadcasting every 30 seconds
 function startDataBroadcasting() {
-	console.log("Starting real-time data broadcasting...");
 	// Initial broadcast
 	setTimeout(broadcastDataUpdates, 2000); // Wait 2 seconds after server start
 
@@ -105,12 +197,25 @@ function startDataBroadcasting() {
 	dataUpdateInterval = setInterval(broadcastDataUpdates, 10000);
 }
 
+// Start periodic pump status polling
+function startPumpStatusPolling() {
+	// Initial poll after 3 seconds
+	setTimeout(broadcastPumpStatusUpdates, 3000);
+
+	// Set up periodic polling every 15 seconds
+	pumpStatusInterval = setInterval(broadcastPumpStatusUpdates, 15000);
+}
+
 // Stop data broadcasting (useful for cleanup)
 function stopDataBroadcasting() {
 	if (dataUpdateInterval) {
 		clearInterval(dataUpdateInterval);
 		dataUpdateInterval = null;
-		console.log("Data broadcasting stopped");
+	}
+
+	if (pumpStatusInterval) {
+		clearInterval(pumpStatusInterval);
+		pumpStatusInterval = null;
 	}
 }
 
@@ -148,8 +253,43 @@ function onListening() {
 	debug("Listening on " + bind);
 	console.log("Server is listening on " + bind);
 
+	// Blynk Configuration Validation
+	console.log("\n🔧 Blynk Configuration Check:");
+	if (BLYNK_AUTH_TOKEN) {
+		console.log(`✅ Token: ${BLYNK_AUTH_TOKEN.substring(0, 8)}... (${BLYNK_AUTH_TOKEN.length} chars)`);
+		console.log(`✅ API URL: ${BLYNK_API_URL}`);
+		console.log("✅ Virtual Pin Mapping:");
+		Object.entries(VIRTUAL_PIN_MAPPING).forEach(([node, pin]) => {
+			console.log(`   ${node} → ${pin.toUpperCase()}`);
+		});
+
+		// Test Blynk connectivity
+		testBlynkConnection();
+	} else {
+		console.error("❌ BLYNK_AUTH_TOKEN tidak ditemukan!");
+		console.error("❌ Kontrol pompa tidak akan berfungsi!");
+	}
+
 	// Start real-time data broadcasting
 	startDataBroadcasting();
+
+	// Start pump status polling
+	startPumpStatusPolling();
+}
+
+// Function to test Blynk connection on startup
+async function testBlynkConnection() {
+	try {
+		// Test dengan virtual pin V0 (node1)
+		const testUrl = `${BLYNK_API_URL}/get?token=${BLYNK_AUTH_TOKEN}&v0`;
+		const response = await axios.get(testUrl, { timeout: 5000 });
+
+		console.log(`✅ Blynk connectivity test passed!`);
+	} catch (error) {
+		console.error("❌ Blynk connectivity test failed!");
+		console.error("❌ Error:", error.response?.data || error.message);
+		console.error("❌ Please check your BLYNK_AUTH_TOKEN and internet connection");
+	}
 }
 
 // Graceful shutdown handling
